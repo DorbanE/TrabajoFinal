@@ -3,18 +3,17 @@ import numpy as np
 from scipy.optimize import milp, Bounds, LinearConstraint
 import pandas as pd
 
-st.set_page_config(page_title="Optimización de Flujo de Redes", layout="wide")
+st.set_page_config(page_title="Optimizacion Flujo Redes", layout="wide")
 
-st.title("🕸️ Optimización Multi-Flujo con MILP")
-st.write("Esta aplicación optimiza de forma independiente y conjunta el flujo de tres demandas (F1, F2, F3) a través de una red compartida, minimizando el costo total de transporte sin superar las capacidades de los arcos.")
+st.title("Optimizacion Multi Flujo")
+st.write("Esta app minimiza el costo total de transporte sin superar las capacidades de los arcos.")
 
-# --- Configuración de parámetros en la barra lateral ---
-st.sidebar.header("Parámetros de Demanda")
+st.sidebar.header("Parametros de Demanda")
 flow_1_qty = st.sidebar.slider("Demanda Flujo 1 (Nodo 1 -> Nodo 8)", 0, 15, 6, 1)
 flow_2_qty = st.sidebar.slider("Demanda Flujo 2 (Nodo 2 -> Nodo 7)", 0, 15, 5, 1)
 flow_3_qty = st.sidebar.slider("Demanda Flujo 3 (Nodo 3 -> Nodo 8)", 0, 15, 4, 1)
 
-# --- Definición del Problema ---
+
 edge_names = [
     "X12", "X13", "X23", "X24", "X25", "X34", "X36", "X45", "X47", "X56", "X58", "X67", "X68", "X78"
 ]
@@ -60,12 +59,11 @@ b_u = np.concatenate([b_eq, capacities])
 
 constraints = LinearConstraint(A_all, b_l, b_u)
 
-# --- Resolver ---
-if st.button("⚡ Ejecutar Optimización", use_container_width=True):
+if st.button("Ejecutar Optimizacion", use_container_width=True):
     res = milp(c=c, bounds=bounds, constraints=constraints, integrality=integrality)
     
     if res.success:
-        st.success(f"¡Optimización Exitosa! Costo Total Mínimo: **{res.fun:.2f}**")
+        st.success(f"Optimizacion Exitosa! Costo Total Mínimo: **{res.fun:.2f}**")
         
         # Construir el DataFrame de Resultados
         f1_flows = [round(res.x[i]) for i in range(num_edges)]
@@ -85,10 +83,10 @@ if st.button("⚡ Ejecutar Optimización", use_container_width=True):
         
         st.dataframe(df, use_container_width=True)
         
-        # Mostrar algunas métricas resumidas
+       
         col1, col2, col3 = st.columns(3)
         col1.metric("Suma Total de Flujos", sum(total_flows))
         col2.metric("Costo Medio por Unidad", f"{res.fun / max(1, sum(total_flows)):.2f}")
         col3.metric("Uso de Capacidad Promedio", f"{(sum(total_flows)/sum(capacities))*100:.1f}%")
     else:
-        st.error(f"No se encontró solución factible: {res.message}")
+        st.error(f"No se encontró solucion factible: {res.message}")
